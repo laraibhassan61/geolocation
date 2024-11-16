@@ -1,23 +1,36 @@
 <?php
 
 namespace App\Http\Controllers;
+use Illuminate\Support\Facades\Http;
+use App\Models\Store;
 
 use Illuminate\Http\Request;
 
 class StoreController extends Controller
 {
-    public function index(){
-        $ipAddress = $this->getClientIp(); // Get the user's public IP address
-        return view('store', compact('ipAddress')); // Pass the IP address to the view
-    }
+    public function index()
+{
+    // Get the user's public IP address (works in deployed environment)
+    //$ip = request()->ip(); 
+$ip='154.80.1.202';
+    // Fetch location data from IP-API service
+    $response = Http::get("http://ip-api.com/json/{$ip}");
+    $locationData = $response->json();
 
-    private function getClientIp() {
-        // Check for 'X-Forwarded-For' header for proxies
-        if (request()->server('HTTP_X_FORWARDED_FOR')) {
-            $ip = request()->server('HTTP_X_FORWARDED_FOR');
-        } else {
-            $ip = request()->ip(); // Get IP if not behind proxy
-        }
-        return $ip;
-    }
+    // Extract latitude and longitude from the response
+    $latitude = $locationData['lat'];
+    $longitude = $locationData['lon'];
+
+    // Fetch nearby stores within a certain distance (e.g., 10 km) using Store model
+    $nearbyStores = Store::whereRaw('ST_Distance_Sphere(point(longitude, latitude), point(?, ?)) < ?', [$longitude, $latitude, 100000000000])
+                        ->get(); // Stores within a 10km radius
+
+    // Pass the user's location and nearby stores to the view
+    return view('store', [
+        'location' => $locationData,
+        'stores' => $nearbyStores
+    ]);
+}
+
+ 
 }
