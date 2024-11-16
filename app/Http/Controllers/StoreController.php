@@ -10,10 +10,13 @@ class StoreController extends Controller
 {
     public function index()
 {
-    dd(Store::count());
+   
     // Get the user's public IP address (works in deployed environment)
-    //$ip = request()->ip(); 
-$ip='154.80.1.202';
+    $ip = request()->ip(); 
+    if($ip=='127.0.0.1'){
+        $ip='154.80.1.202';
+    }
+    
     // Fetch location data from IP-API service
     $response = Http::get("http://ip-api.com/json/{$ip}");
     $locationData = $response->json();
