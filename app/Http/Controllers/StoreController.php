@@ -22,7 +22,7 @@ $ip='154.80.1.202';
     $longitude = $locationData['lon'];
 
     // Fetch nearby stores within a certain distance (e.g., 10 km) using Store model
-    $nearbyStores = Store::whereRaw('ST_Distance_Sphere(point(longitude, latitude), point(?, ?)) < ?', [$longitude, $latitude, 100000000000])
+    $nearbyStores = Store::whereRaw('ST_Distance_Sphere(point(longitude, latitude), point(?, ?)) < ?', [$longitude, $latitude, 5000])
                         ->get(); // Stores within a 10km radius
 
     // Pass the user's location and nearby stores to the view
